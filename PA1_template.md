@@ -29,7 +29,7 @@ Convert the date column to the Date data type.
 activity$date<-as.Date(activity$date)
 ```
 
-## What is mean total number of steps taken per day?
+## What is the mean total number of steps taken per day?
 Calculate the number of steps taken per day and display in a histogram:
 
 ```r
@@ -48,7 +48,7 @@ mean(stepsPerDay$steps,na.rm=TRUE)
 ```
 ## [1] 10766.19
 ```
-and the median number of steps taken in day is given by
+and the median number of steps taken in a day is given by
 
 ```r
 median(stepsPerDay$steps,na.rm=TRUE)
@@ -75,7 +75,7 @@ plot(stepsPerInterval$interval,stepsPerInterval$steps,type="l",ylab="Number of S
 
 ![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
-Get the interval with the maximal number of average steps:
+The interval with the maximal number of average steps is 
 
 ```r
 stepsPerInterval[which.max(stepsPerInterval$steps),"interval"]
@@ -127,6 +127,8 @@ completeActivity$steps <- with(completeActivity, ave(steps, interval,
     FUN = function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))))
 ```
 
+Display a histogram of the number of steps taken per day with the imputed data.
+
 
 ```r
 completeStepsPerDay<-aggregate(completeActivity["steps"],by=completeActivity["date"],sum)
@@ -156,3 +158,38 @@ median(completeStepsPerDay$steps)
 While the mean stays the same, the median shifts slightly with the na's removed.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Create a factor variable to split the data by weekday vs weekend
+
+```r
+weekdays1<-c("Monday","Tuesday","Wednesday","Thursday","Friday")
+
+completeActivity$wDay<-factor((weekdays(completeActivity$date) %in% weekdays1), 
+         levels=c(FALSE, TRUE), labels=c('weekend', 'weekday') )
+```
+
+Create a line plot comparing the average steps per time interval split by weeday vs weekend.
+
+
+```r
+weekdaySteps<-completeActivity[completeActivity$wDay=="weekday",]
+weekendSteps<-completeActivity[completeActivity$wDay=="weekend",]
+  
+  
+stepsPerIntervalWeekday<-aggregate(weekdaySteps["steps"],by=weekdaySteps["interval"],mean,na.rm=TRUE)
+stepsPerIntervalWeekend<-aggregate(weekendSteps["steps"],by=weekendSteps["interval"],mean,na.rm=TRUE)
+
+
+x<-stepsPerIntervalWeekday$interval
+y1<-stepsPerIntervalWeekday$steps
+y2<-stepsPerIntervalWeekend$steps
+
+
+plot(x,y1,type="l",ylab="Number of Steps",xlab="Time Interval",main="Steps per Time Interval")
+lines(x,y2,col="Red")
+legend("topright", legend=c("Weekday","Weekend"),col=c("black", "red"),lty=c(1,1,1),cex=1)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
+
+From the plot it appears that the general pattern of steps taken per day and weekend is similar. However, there appear to be fewer steps taken in the morning on a weekend and a bigger spike between time interval 500 and 1000 for weekdays. There are also slightly more steps taken throughout the day on a weekend.
